@@ -7,7 +7,8 @@ use Except\UsernameAlreadyExist;
 use Except\UserNotFound;
 use Propel\Runtime\Exception\PropelException;
 
-class UserController {
+class UserController
+{
     /**
      * @throws PropelException
      * @throws UsernameAlreadyExist

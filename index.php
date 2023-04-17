@@ -16,7 +16,9 @@ use Except\UserNotFound;
 use Except\UserIsNotGroupCreator;
 use Except\UserIsNotMemberOfGroup;
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
+require_once './propel/config/loadDatabase.php';
+require_once './propel/config/config.php';
 
 $app = AppFactory::create();
 
@@ -27,8 +29,9 @@ $dotenv->safeLoad();
 
 $app->post('/login', function (Request $request, Response $response, $args) {
     try {
-        $username = $args["username"];
-        $password = $args["password"];
+        $body = getReqBody();
+        $username = $body["username"];
+        $password = $body["password"];
         $jwt = AuthController::login($username, $password);
         $responseBody = json_encode(["jwt" => $jwt], JSON_PRETTY_PRINT);
         $response->getBody()->write($responseBody);
@@ -43,8 +46,9 @@ $app->post('/login', function (Request $request, Response $response, $args) {
 
 $app->post('/signup', function (Request $request, Response $response, $args) {
     try {
-        $username = $args["username"];
-        $password = $args["password"];
+        $body = getReqBody();
+        $username = $body["username"];
+        $password = $body["password"];
         $jwt = UserController::signup($username, $password);
         $responseBody = json_encode(["jwt" => $jwt], JSON_PRETTY_PRINT);
         $response->getBody()->write($responseBody);
@@ -53,6 +57,7 @@ $app->post('/signup', function (Request $request, Response $response, $args) {
         $response->getBody()->write($e->getMessage());
         return $response->withStatus(400);
     } catch (Exception $e) {
+        $response->getBody()->write($e->getMessage());
         return $response->withStatus(500);
     }
 });
@@ -63,7 +68,7 @@ $app->get('/user/{userId}', function (Request $request, Response $response, $arg
     try {
         $userId = $args['userId'];
         $user = UserController::getById($userId);
-        unset($user["password"]);
+        unset($user["Password"]);
         $responseBody = json_encode(["user" => $user], JSON_PRETTY_PRINT);
         $response->getBody()->write($responseBody);
         return $response->withStatus(200);
@@ -79,8 +84,9 @@ $app->post('/user', function (Request $request, Response $response, $args) {
     try {
 
         $user = AuthController::loginWithJwt();
-        $username = $args["username"];
-        $password = $args["password"];
+        $body = getReqBody();
+        $username = $body["username"];
+        $password = $body["password"];
         UserController::updateProfile($user, $username, $password);
         return $response->withStatus(200);
     } catch (Exception $e) {
@@ -103,10 +109,12 @@ $app->delete('/user', function (Request $request, Response $response, $args) {
 $app->post('/group', function (Request $request, Response $response, $args) {
     try {
         $user = AuthController::loginWithJwt();
-        $groupName = $args["groupName"];
+        $body = getReqBody();
+        $groupName = $body["groupName"];
         GroupController::createGroup($groupName, $user->getId());
         return $response->withStatus(200);
     } catch (Exception $e) {
+        $response->getBody()->write($e->getMessage());
         return $response->withStatus(500);
     }
 });
@@ -128,7 +136,8 @@ $app->post('/group/{groupId}', function (Request $request, Response $response, $
     try {
         $user = AuthController::loginWithJwt();
         $groupId = $args["groupId"];
-        $groupName = $args["groupName"];
+        $body = getReqBody();
+        $groupName = $body["groupName"];
         GroupController::updateGroup($groupId, $groupName, $user->getId());
         return $response->withStatus(200);
     } catch (UserIsNotMemberOfGroup $e) {
@@ -140,7 +149,7 @@ $app->post('/group/{groupId}', function (Request $request, Response $response, $
 
 $app->get('/group/{groupId}/members', function (Request $request, Response $response, $args) {
     try {
-        $user = AuthController::loginWithJwt();
+        AuthController::loginWithJwt();
         $groupId = $args["groupId"];
         GroupController::getGroupMembers($groupId);
         return $response->withStatus(200);
@@ -191,8 +200,9 @@ $app->post('/message/{userId}', function (Request $request, Response $response, 
     try {
         $user = AuthController::loginWithJwt();
         $receiverId = $args["userId"];
-        $text = $args["text"];
-        $createdAt = $args["created_at"];
+        $body = getReqBody();
+        $text = $body["text"];
+        $createdAt = $body["created_at"];
         MessageController::sendPrivateMessage($user->getId(), $receiverId, $text, $createdAt);
 
         return $response->withStatus(200);
@@ -223,8 +233,9 @@ $app->post('message/group/{groupId}', function (Request $request, Response $resp
     try {
         $user = AuthController::loginWithJwt();
         $groupId = $args["groupId"];
-        $text = $args["text"];
-        $createdAt = $args["created_at"];
+        $body = getReqBody();
+        $text = $body["text"];
+        $createdAt = $body["created_at"];
         MessageController::sendGroupMessage($user->getId(), $groupId, $text, $createdAt);
         return $response->withStatus(200);
     } catch (UserIsNotMemberOfGroup $e) {
@@ -234,5 +245,11 @@ $app->post('message/group/{groupId}', function (Request $request, Response $resp
     }
 });
 
+function getReqBody()
+{
+    $jsonReqUrl  = "php://input";
+    $reqJson = file_get_contents($jsonReqUrl);
+    return json_decode($reqJson, true);
+}
 
 $app->run();

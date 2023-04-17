@@ -1,5 +1,6 @@
 {
     "require": {
+        "php": "8.2.*",
         "slim/slim": "4.*",
         "slim/psr7": "^1.6",
         "zircote/swagger-php": "^4.7",
@@ -10,5 +11,13 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Controller\\": "src/Controller/",
+            "DAO\\": "src/DAO/",
+            "Model\\": "src/Model/",
+            "Except\\": "src/Exception/"
+        }
     }
 }
