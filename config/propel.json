@@ -1,0 +1,31 @@
+{
+  "propel": {
+    "database": {
+      "connections": {
+        "chat": {
+          "adapter": "sqlite",
+          "classname": "Propel\\Runtime\\Connection\\ConnectionWrapper",
+          "dsn": "sqlite:chat",
+          "user": "",
+          "password": "",
+          "attributes": []
+        }
+      }
+    },
+    "paths": {
+      "outputDir": "propel/",
+      "phpConfDir": "propel/config/",
+      "sqlDir": "propel/sql/",
+      "migrationDir": "propel/migration/",
+      "phpDir": "src/"
+    },
+    "runtime": {
+      "defaultConnection": "chat",
+      "connections": ["chat"]
+    },
+    "generator": {
+      "defaultConnection": "chat",
+      "connections": ["chat"]
+    }
+  }
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="chat" defaultIdMethod="native" namespace="Model">
+
+    <table name="user">
+        <column name="id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="username" type="VARCHAR" size="100" required="true" />
+        <column name="password" type="VARCHAR" size="100" required="true" />
+    </table>
+
+    <table name="group">
+        <column name="id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="name" type="VARCHAR" required="true" />
+        <column name="creator_id" type="INTEGER" />
+        <foreign-key foreignTable="user">
+            <reference local="creator_id" foreign="id"/>
+        </foreign-key>
+    </table>
+
+    <table name="message">
+        <column name="id" type="INTEGER" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="sender_id" type="INTEGER" required="true" />
+        <column name="receiver_id" type="INTEGER" />
+        <column name="group_id" type="INTEGER" />
+        <column name="text" type="VARCHAR" required="true"/>
+        <column name="created_at" type="TIMESTAMP" required="true"/>
+        <foreign-key foreignTable="user" phpName="senderId">
+            <reference local="sender_id" foreign="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="user" phpName="receiverId">
+            <reference local="receiver_id" foreign="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="group">
+            <reference local="group_id" foreign="id"/>
+        </foreign-key>
+    </table>
+
+    <table name="membership">
+        <column name="user_id" type="INTEGER" primaryKey="true" required="true"/>
+        <column name="group_id" type="INTEGER" primaryKey="true" required="true"/>
+        <foreign-key foreignTable="user">
+            <reference local="user_id" foreign="id"/>
+        </foreign-key>
+        <foreign-key foreignTable="group">
+            <reference local="group_id" foreign="id"/>
+        </foreign-key>
+    </table>
+
+</database>
